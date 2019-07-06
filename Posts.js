@@ -1,6 +1,15 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import { Container } from 'react-bootstrap';
+import('bootstrap/dist/css/bootstrap.min.css');
+
+const divStyle = {
+  padding:'10px',
+  'margin-left':'10%',
+  'margin-right':'10%',
+  'margin-bottom':'0%'
+};
+
 
 class Posts extends React.Component {
   constructor(props) {
@@ -11,10 +20,10 @@ class Posts extends React.Component {
       .then(posts => (this.setState({posts})))
   } 
   render() {
-    return (<Container>
-      <ul>
-        {this.state.posts.map(post => (<li key={post.title}>
-          <h2>{post.title}</h2>
+    return (<Container >
+      <ul style={{'list-style-type':'none'}}>
+        {this.state.posts.map(post => (<li>
+          <h2 class='border rounded' style={divStyle}>{post.title}</h2>
           <p>{post.body}</p>    
         </li>))}
       </ul>

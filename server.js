@@ -2,7 +2,7 @@ var express = require('express')
 var FeedParser = require('feedparser');
 var request = require('request'); // for fetching the feed
 
-var req = request('https://www.reddit.com/r/nba.rss')
+var req = request('https://www.reddit.com/r/nba/new.rss')
 var feedparser = new FeedParser();
 
 req.on('error', function (error) {
