@@ -3,11 +3,13 @@ var FeedParser = require('feedparser');
 var request = require('request'); // for fetching the feed
 var mysql = require('mysql');
 var websocket = require('express-ws');
-var req = request('https://www.reddit.com/r/nba/new.rss')
-var feedparser = new FeedParser();
+
 var app = express()
 var port = 3000
-var items = []
+var newPosts = []
+var stream;
+
+
 
 //functions for database querying
 function getPostsFromDB() {
@@ -16,7 +18,7 @@ function getPostsFromDB() {
     con.query(sql, function (err, result) {
       if (err) throw err;
       var output = []
-      
+
       Object.keys(result).forEach(function (key) {//TODO: why does this need qoutes?
         output.push("'" + result[key].pubdate + "'")
       })
@@ -25,26 +27,66 @@ function getPostsFromDB() {
   })
 }
 
-function addPostsToDB(alreadyContains) {
+function addPostsToDB(newPosts, dbposts) {
   return new Promise((res, rej) => {
-    var newPosts = []
-    for (var i = 0; i < items.length; i++) {
-      for (var j = 0; j < alreadyContains.length; j++) {
-        if (!(con.escape(items[i]['pubdate']) == alreadyContains[j])) {
-          newPosts.push(items[i])
-          var sql = "INSERT IGNORE INTO posts (pubdate, link, contents) VALUES (" + con.escape(items[i].pubdate) + "," + con.escape(items[i].link) + "," + con.escape(items[i].title) + ")";
-          con.query(sql, function (err, result) {
-            if (err) throw err;
-          })
-          break;
+    for (var i = 0; i < newPosts.length; i++) {
+      for (var j = 0; j < dbposts.length; j++) {
+        console.log(newPosts[i])
+        console.log(con.escape(newPosts[i]['pubdate']) == dbposts[j])
+        if (!(con.escape(newPosts[i]['pubdate']) == dbposts[j])) {
+          newPosts.splice(i, 1)
+          // var sql = "INSERT IGNORE INTO posts (pubdate, link, contents) VALUES (" + con.escape(newPosts[i].pubdate) + "," + con.escape(newPosts[i].link) + "," + con.escape(newPosts[i].title) + ")";
+          // con.query(sql, function (err, result) {
+          //   if (err) throw err;
+          // })
+          // break;
         }
       }
     }
     res(newPosts);
   })
 }
+function scrapePosts() {
+  return new Promise((res, rej) => {
+    var feedparser = new FeedParser();
+    var req = request('https://www.reddit.com/r/nba/new.rss')
+    req.on('error', function (error) {
+      // handle any request errors
+    });
+    req.on('response', function (res) {
+      stream = this;
 
+      if (res.statusCode !== 200) {
+        this.emit('error', new Error('Bad status code'));
+      }
+      else {
+        stream.pipe(feedparser);
+      }
+    });
 
+    feedparser.on('error', (err) => {
+      if (err) throw err;
+    })
+    feedparser.on('readable', () => {
+      var stream = feedparser;
+      var meta = this.meta;
+      var item;
+      while (item = stream.read()) {
+        newPosts.push(item)
+      }
+      res(newPosts)
+
+    })
+  })
+}
+function getPosts() {
+  return new Promise(async (res, rej) => {
+    var posts = await scrapePosts()
+    //  var dbPosts = await getPostsFromDB();
+    //  var items = await addPostsToDB(newPosts, dbPosts);
+    res(posts)
+  })
+}
 
 
 
@@ -91,35 +133,10 @@ con.query(sql, function (err, result) {
 
 
 
-//GET DATA FROM WEBSITE AND PARSE
-req.on('error', function (error) {
-  // handle any request errors
-});
-req.on('response', function (res) {
-  var stream = this;
-
-  if (res.statusCode !== 200) {
-    this.emit('error', new Error('Bad status code'));
-  }
-  else {
-    stream.pipe(feedparser);
-  }
-});
 
 
-feedparser.on('error', function (error) {
-  // always handle errors
-});
-feedparser.on('readable', async function () {
-  var stream = this;
-  var meta = this.meta;
-  var item;
-  while (item = stream.read()) {
-    items.push(item)
-  }
-  var posts = await getPostsFromDB();
-  items = await addPostsToDB(posts);
-});
+
+
 
 
 
@@ -135,18 +152,16 @@ app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 })
-app.get('/', (res)=> {
-
-})
 websocket(app)
-app.ws('/', (ws, req) => {
-  var count = 0;
-  setInterval(() => {
-    if (!(items.length == 0)) {
-      var item = items.pop();
-      ws.send(item.title);
+app.ws('/', async (ws, req) => {
+  setInterval(async function () {
+    if (newPosts.length == 0) {
+      newPosts = await getPosts();
     }
-  }, 3000)
+    console.log("queue length:" + newPosts.length);
+    var posts = newPosts.pop();
+    ws.send(posts.title);
+  }, 1000)
 })
 
 app.listen(port, () => console.log(`Listening on 127.0.0.1:${port}`))

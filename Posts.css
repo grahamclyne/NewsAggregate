@@ -2,8 +2,11 @@
   padding: 10px;
   margin-left: 10%;
   margin-right: 10%;
-  margin-bottom: 0%;
+  margin-bottom: 2%;
   font-size: 25px;
+  border-radius: 8px;
+  border: 2px solid cyan;
+
 };
 
 .example-enter {
@@ -12,7 +15,7 @@
 
 .example-enter.example-enter-active {
   opacity: 1;
-  transition: 700ms;
+  transition: opacity 700ms ease-in;
 }
 
 .example-leave {
@@ -21,5 +24,13 @@
 
 .example-leave.example-leave-active {
   opacity: 0.01;
-  transition: 700ms;
+  transition: opacity 700ms ease-in;
+}
+.example-appear {
+  opacity: 0.01;
+}
+
+.example-appear.fade-appear-active {
+  opacity: 1;
+  transition: opacity .5s ease-in;
 }

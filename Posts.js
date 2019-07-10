@@ -23,23 +23,24 @@ class Posts extends React.Component {
       if (temp.length > 5) {
         temp.pop();
       }
-      this.setState({posts: temp})
+      this.setState({ posts: temp })
     }
   }
   render() {
     return (<Container >
-              <CSSTransitionGroup 
-          transitionName="example" 
-          transitionEnterTimeout={700} 
-          transitionLeaveTimeout={700}>
+
       <ul style={{ 'list-style-type': 'none' }}>
-
-                  {this.state.posts.map(post => (<li>
-          <p class='border rounded' className='post' key={post}>{post}</p>
-                  </li>))}
-
+        <CSSTransitionGroup
+          transitionName="example"
+          transitionEnterTimeout={700}
+          transitionLeaveTimeout={700}
+          transitionAppearTimeout={500}
+          transitionAppear={true}>
+          {this.state.posts.map(post => (<li>
+            <h2  className='post' key={post}>{post}</h2>
+          </li>))}
+        </CSSTransitionGroup>
       </ul>
-          </CSSTransitionGroup>
 
     </Container>);
   }
