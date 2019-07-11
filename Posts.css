@@ -6,16 +6,14 @@
   font-size: 25px;
   border-radius: 8px;
   border: 2px solid cyan;
-
-};
-
-.example-enter {
+}
+.example-enter {  
   opacity: 0.01;
 }
 
 .example-enter.example-enter-active {
   opacity: 1;
-  transition: opacity 700ms ease-in;
+  transition: opacity 500ms ease-in;
 }
 
 .example-leave {
@@ -24,13 +22,5 @@
 
 .example-leave.example-leave-active {
   opacity: 0.01;
-  transition: opacity 700ms ease-in;
-}
-.example-appear {
-  opacity: 0.01;
-}
-
-.example-appear.fade-appear-active {
-  opacity: 1;
-  transition: opacity .5s ease-in;
+  transition: opacity 300ms ease-in;
 }

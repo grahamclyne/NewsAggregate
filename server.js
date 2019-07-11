@@ -9,6 +9,33 @@ var port = 3000
 var newPosts = []
 var stream;
 
+//CONNECT TO DB
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "password",
+  database: "NewsAggregate"
+});
+con.connect(function (err) {
+  if (err) throw err;
+  console.log("Connected to database.");
+
+});
+// var sql = 'DROP TABLE posts'
+// con.query(sql, function (err) {
+//   if (err) throw err;
+//   console.log("Table Posts Dropped");
+
+// });
+var sql = 'CREATE TABLE IF NOT EXISTS posts (pubdate DATETIME PRIMARY KEY, link VARCHAR(255), contents TEXT(1000))'
+con.query(sql, function (err, result) {
+  if (err) throw err;
+  //console.log(result);
+});
+
+
+
+
 
 
 //functions for database querying
@@ -20,7 +47,7 @@ function getPostsFromDB() {
       var output = []
 
       Object.keys(result).forEach(function (key) {//TODO: why does this need qoutes?
-        output.push("'" + result[key].pubdate + "'")
+        output.push(result[key].pubdate)
       })
       res(output);
     })
@@ -28,28 +55,30 @@ function getPostsFromDB() {
 }
 
 function addPostsToDB(newPosts, dbposts) {
+  var toReturn = []
+  dbposts = dbposts.map(Date.parse)
   return new Promise((res, rej) => {
     for (var i = 0; i < newPosts.length; i++) {
-      for (var j = 0; j < dbposts.length; j++) {
-        console.log(newPosts[i])
-        console.log(con.escape(newPosts[i]['pubdate']) == dbposts[j])
-        if (!(con.escape(newPosts[i]['pubdate']) == dbposts[j])) {
-          newPosts.splice(i, 1)
-          // var sql = "INSERT IGNORE INTO posts (pubdate, link, contents) VALUES (" + con.escape(newPosts[i].pubdate) + "," + con.escape(newPosts[i].link) + "," + con.escape(newPosts[i].title) + ")";
-          // con.query(sql, function (err, result) {
-          //   if (err) throw err;
-          // })
-          // break;
-        }
+      console.log(dbposts.includes(Date.parse(newPosts[i].pubdate)))
+      if (!(dbposts.includes(Date.parse(newPosts[i].pubdate)))) {
+        toReturn.push(newPosts[i])
+        //'YYYY-MM-DD hh:mm:ss' <---- DATETIME format
+        var sql = "INSERT IGNORE INTO posts (pubdate, link, contents) VALUES (" + con.escape(newPosts[i].pubdate) + "," + con.escape(newPosts[i].link) + "," + con.escape(newPosts[i].title) + ")";
+        con.query(sql, function (err, result) {
+          if (err) throw err;
+        })
       }
     }
-    res(newPosts);
+    res(toReturn);
   })
 }
-function scrapePosts() {
+
+
+
+function scrapePosts(website) {
   return new Promise((res, rej) => {
     var feedparser = new FeedParser();
-    var req = request('https://www.reddit.com/r/nba/new.rss')
+    var req = request(website)
     req.on('error', function (error) {
       // handle any request errors
     });
@@ -71,73 +100,26 @@ function scrapePosts() {
       var stream = feedparser;
       var meta = this.meta;
       var item;
-      while (item = stream.read()) {
-        newPosts.push(item)
-      }
+      (async function loop() {
+        while (item = stream.read()) {
+          newPosts = await new Promise(resolve => { newPosts.push(item); resolve(newPosts) })
+        }
+      })();
       res(newPosts)
-
     })
+
   })
 }
 function getPosts() {
   return new Promise(async (res, rej) => {
-    var posts = await scrapePosts()
-    //  var dbPosts = await getPostsFromDB();
-    //  var items = await addPostsToDB(newPosts, dbPosts);
-    res(posts)
+    var newPosts = await scrapePosts('https://montrealgazette.com/feed/');
+    newPosts1 = await scrapePosts('https://www.reddit.com/r/nba/new.rss')
+    newPosts = newPosts.concat(newPosts1)
+    var dbPosts = await getPostsFromDB();
+    var items = await addPostsToDB(newPosts, dbPosts);
+    res(items);
   })
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//CONNECT TO DB
-var con = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "password",
-  database: "NewsAggregate"
-});
-con.connect(function (err) {
-  if (err) throw err;
-  console.log("Connected to database.");
-
-});
-var sql = 'CREATE TABLE IF NOT EXISTS posts (pubdate VARCHAR(40) PRIMARY KEY, link VARCHAR(255), contents TEXT(1000))'
-con.query(sql, function (err, result) {
-  if (err) throw err;
-  //console.log(result);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 //SERVER
@@ -158,10 +140,12 @@ app.ws('/', async (ws, req) => {
     if (newPosts.length == 0) {
       newPosts = await getPosts();
     }
-    console.log("queue length:" + newPosts.length);
-    var posts = newPosts.pop();
-    ws.send(posts.title);
-  }, 1000)
+    if (newPosts.length > 0) {
+      console.log("queue length:" + newPosts.length);
+      var post = newPosts.pop();
+      ws.send(post.title);
+    }
+  }, 3000)
 })
-
+getPosts()
 app.listen(port, () => console.log(`Listening on 127.0.0.1:${port}`))

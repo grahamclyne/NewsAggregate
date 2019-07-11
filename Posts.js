@@ -1,10 +1,8 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import ReactDOM from "react-dom";
-import { Container } from 'react-bootstrap';
 import('bootstrap/dist/css/bootstrap.min.css');
-var CSSTransitionGroup = require('react-transition-group/CSSTransitionGroup') // ES5 with npm
+import { CSSTransitionGroup} from 'react-transition-group'; // ES6
 import('./Posts.css');
-
 
 class Posts extends React.Component {
   constructor(props) {
@@ -18,6 +16,7 @@ class Posts extends React.Component {
     const ws = new WebSocket(this.state.endpoint)
     //push newly received message onto posts array
     ws.onmessage = event => {
+      console.log('receiving' + event)
       var temp = this.state.posts;
       temp.unshift(event.data);
       if (temp.length > 5) {
@@ -27,22 +26,23 @@ class Posts extends React.Component {
     }
   }
   render() {
-    return (<Container >
+    const posts = this.state.posts.map(post => (
+      <li key={post}>
+        <h2 className='post' key={post}>
+          {post}
+        </h2>
+      </li>));
 
-      <ul style={{ 'list-style-type': 'none' }}>
+    return (
+      <ul style={{ 'listStyleType': 'none' }}>
         <CSSTransitionGroup
           transitionName="example"
-          transitionEnterTimeout={700}
-          transitionLeaveTimeout={700}
-          transitionAppearTimeout={500}
-          transitionAppear={true}>
-          {this.state.posts.map(post => (<li>
-            <h2  className='post' key={post}>{post}</h2>
-          </li>))}
+          transitionEnterTimeout={500}
+          transitionLeaveTimeout={300}>
+           {posts}
         </CSSTransitionGroup>
       </ul>
-
-    </Container>);
+    );
   }
 }
 

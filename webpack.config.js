@@ -1,6 +1,7 @@
 var webpack = require('webpack');
 var path = require('path');
 module.exports = {
+      mode: 'development',
   entry: './Posts.js',
   output: { path: __dirname, filename: 'bundle.js' },
   module: {
