@@ -3,17 +3,24 @@
   margin-left: 10%;
   margin-right: 10%;
   margin-bottom: 2%;
-  font-size: 25px;
   border-radius: 8px;
   border: 2px solid cyan;
+  position:relative;
 }
+
 .example-enter {  
   opacity: 0.01;
+  margin-left:0;
+  margin-right:0;
+  font-size:0px;
 }
 
 .example-enter.example-enter-active {
   opacity: 1;
-  transition: opacity 500ms ease-in;
+  margin-left:10%;
+  margin-right:10%;
+  font-size:15px;
+  transition: font-size 500ms ease-in, opacity 500ms ease-in, margin-left 500ms ease-in, margin-right 500ms ease-in;
 }
 
 .example-leave {
@@ -24,3 +31,4 @@
   opacity: 0.01;
   transition: opacity 300ms ease-in;
 }
+

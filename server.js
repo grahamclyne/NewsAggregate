@@ -1,13 +1,11 @@
 var express = require('express')
-var FeedParser = require('feedparser');
+//var FeedParser = require('feedparser');
 var request = require('request'); // for fetching the feed
 var mysql = require('mysql');
 var websocket = require('express-ws');
-
+const FeedParser = require('feedparser-promised');
 var app = express()
 var port = 3000
-var newPosts = []
-var stream;
 
 //CONNECT TO DB
 var con = mysql.createConnection({
@@ -21,12 +19,12 @@ con.connect(function (err) {
   console.log("Connected to database.");
 
 });
-// var sql = 'DROP TABLE posts'
-// con.query(sql, function (err) {
-//   if (err) throw err;
-//   console.log("Table Posts Dropped");
+ var sql = 'DROP TABLE posts'
+ con.query(sql, function (err) {
+   if (err) throw err;
+   console.log("Table Posts Dropped");
 
-// });
+ });
 var sql = 'CREATE TABLE IF NOT EXISTS posts (pubdate DATETIME PRIMARY KEY, link VARCHAR(255), contents TEXT(1000))'
 con.query(sql, function (err, result) {
   if (err) throw err;
@@ -55,11 +53,10 @@ function getPostsFromDB() {
 }
 
 function addPostsToDB(newPosts, dbposts) {
-  var toReturn = []
   dbposts = dbposts.map(Date.parse)
   return new Promise((res, rej) => {
+    var toReturn = []
     for (var i = 0; i < newPosts.length; i++) {
-      console.log(dbposts.includes(Date.parse(newPosts[i].pubdate)))
       if (!(dbposts.includes(Date.parse(newPosts[i].pubdate)))) {
         toReturn.push(newPosts[i])
         //'YYYY-MM-DD hh:mm:ss' <---- DATETIME format
@@ -74,50 +71,24 @@ function addPostsToDB(newPosts, dbposts) {
 }
 
 
-
 function scrapePosts(website) {
+  var newPosts = []
   return new Promise((res, rej) => {
-    var feedparser = new FeedParser();
-    var req = request(website)
-    req.on('error', function (error) {
-      // handle any request errors
-    });
-    req.on('response', function (res) {
-      stream = this;
-
-      if (res.statusCode !== 200) {
-        this.emit('error', new Error('Bad status code'));
-      }
-      else {
-        stream.pipe(feedparser);
-      }
-    });
-
-    feedparser.on('error', (err) => {
-      if (err) throw err;
-    })
-    feedparser.on('readable', () => {
-      var stream = feedparser;
-      var meta = this.meta;
-      var item;
-      (async function loop() {
-        while (item = stream.read()) {
-          newPosts = await new Promise(resolve => { newPosts.push(item); resolve(newPosts) })
-        }
-      })();
-      res(newPosts)
-    })
-
+    FeedParser.parse(website).then(async (items) => {
+      const promises = items.map(item => { newPosts.push(item) });
+      await Promise.all(promises);
+      var dbposts = await getPostsFromDB();
+      res(addPostsToDB(newPosts, dbposts));
+      res(newPosts);
+    }).catch(console.error)
   })
 }
 function getPosts() {
-  return new Promise(async (res, rej) => {
-    var newPosts = await scrapePosts('https://montrealgazette.com/feed/');
-    newPosts1 = await scrapePosts('https://www.reddit.com/r/nba/new.rss')
-    newPosts = newPosts.concat(newPosts1)
-    var dbPosts = await getPostsFromDB();
-    var items = await addPostsToDB(newPosts, dbPosts);
-    res(items);
+  return new Promise(async (res,rej) => {
+  var site1 = await scrapePosts('https://montrealgazette.com/feed/')
+  var site2 = await scrapePosts('http://www.reddit.com/r/nba.rss')
+  var site3 = await scrapePosts('https://www.theguardian.com/us/rss')
+  res(site1.concat(site2))
   })
 }
 
@@ -136,16 +107,18 @@ app.use(function (req, res, next) {
 })
 websocket(app)
 app.ws('/', async (ws, req) => {
+  var newPosts = await getPosts();
   setInterval(async function () {
     if (newPosts.length == 0) {
+      console.log('Checking for new posts...')
       newPosts = await getPosts();
     }
     if (newPosts.length > 0) {
-      console.log("queue length:" + newPosts.length);
+      console.log("Remaining posts to send: " + newPosts.length);
       var post = newPosts.pop();
-      ws.send(post.title);
+      ws.send(JSON.stringify(post));
     }
-  }, 3000)
+  }, 2000)
 })
-getPosts()
 app.listen(port, () => console.log(`Listening on 127.0.0.1:${port}`))
+
