@@ -5,30 +5,39 @@
   margin-bottom: 2%;
   border-radius: 8px;
   border: 2px solid cyan;
-  position:relative;
-}
-
+} 
 .example-enter {  
   opacity: 0.01;
-  margin-left:0;
-  margin-right:0;
+  margin-left:0%;
+  margin-right:0%;
+  padding:0px;
   font-size:0px;
 }
-
+.row {
+  padding-left:1rem;
+  padding-right:1rem;
+}
+div.row a.time{
+  text-align:right;
+}
 .example-enter.example-enter-active {
   opacity: 1;
-  margin-left:10%;
-  margin-right:10%;
-  font-size:15px;
-  transition: font-size 500ms ease-in, opacity 500ms ease-in, margin-left 500ms ease-in, margin-right 500ms ease-in;
+  font-size:1rem;
+  padding-left:1rem;
+  padding-right:1rem;
+  transition: all 400ms ease;
 }
 
 .example-leave {
   opacity: 1;
+    font-size:1rem;
+  padding-left:1rem;
+  padding-right:1rem;
 }
 
 .example-leave.example-leave-active {
   opacity: 0.01;
-  transition: opacity 300ms ease-in;
+    font-size:0;
+  transition: all 400ms ease;
 }
 

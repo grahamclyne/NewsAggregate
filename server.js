@@ -85,10 +85,10 @@ function scrapePosts(website) {
 }
 function getPosts() {
   return new Promise(async (res,rej) => {
-  var site1 = await scrapePosts('https://montrealgazette.com/feed/')
+ // var site1 = await scrapePosts('https://www.montrealgazette.com/feed/')
   var site2 = await scrapePosts('http://www.reddit.com/r/nba.rss')
   var site3 = await scrapePosts('https://www.theguardian.com/us/rss')
-  res(site1.concat(site2))
+  res(site3.concat(site2))
   })
 }
 

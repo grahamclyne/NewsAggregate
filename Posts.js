@@ -29,12 +29,13 @@ class Posts extends React.Component {
   }
   render() {
     const posts = this.state.posts.map(post => (
-      <Row key={post.title} className='post'>
-        <Container>
-        <Row>
+      <Row key={post.title} >
+        <Container className='post'>
+        <Row >
           {post.title}</Row>
           <Row>
         <a href={post.link}>Source: {post.linkshort}</a>
+        <p className='text-right'>Time: {post.date}</p>
         </Row>
         </Container>
       </Row>));
