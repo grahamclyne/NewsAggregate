@@ -1,8 +1,8 @@
-import React, { Component} from "react";
-import {Container,Row,Col} from 'react-bootstrap';
+import React, { Component } from "react";
+import { Container, Row, Col } from 'react-bootstrap';
 import ReactDOM from "react-dom";
 import('bootstrap/dist/css/bootstrap.min.css');
-import { CSSTransitionGroup} from 'react-transition-group'; // ES6
+import { CSSTransitionGroup } from 'react-transition-group'; // ES6
 import('./Posts.css');
 
 class Posts extends React.Component {
@@ -19,7 +19,11 @@ class Posts extends React.Component {
     ws.onmessage = event => {
       var temp = this.state.posts;
       var post = JSON.parse(event.data)
-      post.linkshort = post.link.split('www.')[1].split('.com')[0]
+      try {
+        post.linkshort = post.link.split('www.')[1].split('.com')[0]
+      }
+      catch (err) { post.linkshort = post.link }
+      post.pubdate = new Date(post.pubdate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       temp.unshift(post);
       if (temp.length > 5) {
         temp.pop();
@@ -31,22 +35,25 @@ class Posts extends React.Component {
     const posts = this.state.posts.map(post => (
       <Row key={post.title} >
         <Container className='post'>
-        <Row >
-          {post.title}</Row>
+          <Row >
+            {post.title}
+          </Row>
           <Row>
-        <a href={post.link}>Source: {post.linkshort}</a>
-        <p className='text-right'>Time: {post.date}</p>
-        </Row>
+            <Col><a href={post.link}>Source: {post.linkshort}</a></Col>
+            <Col><p className='text-right'>Time: {post.pubdate}</p></Col>
+          </Row>
         </Container>
       </Row>));
 
     return (
       <Container style={{ 'listStyleType': 'none' }}>
+            <h2>A rolling version of a news feed</h2>
+
         <CSSTransitionGroup
           transitionName="example"
           transitionEnterTimeout={500}
           transitionLeaveTimeout={300}>
-           {posts}
+          {posts}
         </CSSTransitionGroup>
       </Container>
     );

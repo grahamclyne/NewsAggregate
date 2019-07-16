@@ -4,7 +4,7 @@
 
     TODO
 
-    properly close websocket and express-ws
+    limit scraping to only 10 items per site
     set up watching mechanism for webpack
     change key of list in index.js
 
