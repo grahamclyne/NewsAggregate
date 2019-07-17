@@ -5,6 +5,7 @@ var mysql = require('mysql');
 var websocket = require('express-ws');
 const FeedParser = require('feedparser-promised');
 var app = express()
+var path = require('path');
 var port = 3000
 require('dotenv').config()
 //CONNECT TO DB
@@ -36,9 +37,9 @@ function getMostRecentPosts() {
   var output = [];
   con.query(sql, function (err, result) {
     if (err) throw err;
-     Object.keys(result).forEach(function (key) {//TODO: why does this need qoutes?
-    output.push(result[key])
-  })
+    Object.keys(result).forEach(function (key) {//TODO: why does this need qoutes?
+      output.push(result[key])
+    })
   })
   return output;
 }
@@ -100,9 +101,9 @@ function getPosts() {
     var posts = []
     var sites = [
       'https://montrealgazette.com/feed/',
-       'http://www.reddit.com/r/nba.rss',
-       'https://www.theguardian.com/us/rss',
-       'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
+      'http://www.reddit.com/r/nba.rss',
+      'https://www.theguardian.com/us/rss',
+      'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
       // 'https://www.aljazeera.com/xml/rss/all.xml',
 
     ]
@@ -132,6 +133,10 @@ app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 })
+app.get('/', (req,res) => {
+    res.sendFile(path.join(__dirname, '/index.html'))
+})
+
 websocket(app)
 app.ws('/', async (ws, req) => {
   var newPosts = await getPosts();
@@ -152,6 +157,24 @@ app.ws('/', async (ws, req) => {
   ws.on('close', function () {
     clearInterval(x)
   })
+})
+app.get('/:file', (req, res) => {
+  var options = {
+    root: __dirname + '/',
+    dotfiles: 'deny',
+    headers: {
+      'x-timestamp': Date.now(),
+      'x-sent': true
+    }
+  };
+  var fileName = req.params.file;
+  res.sendFile(fileName, options, function (err) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log('Sent:', fileName);
+    }
+  });
 })
 app.listen(port, () => console.log(`Listening on 127.0.0.1:${port}`))
 
