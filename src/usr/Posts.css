@@ -1,0 +1,45 @@
+.post {
+  padding: 10px;
+  margin-left: 10%;
+  margin-right: 10%;
+  margin-bottom: 2%;
+  border-radius: 8px;
+  border: 2px solid cyan;
+} 
+.example-enter {  
+  opacity: 0.01;
+  margin-left:0%;
+  margin-right:0%;
+  padding:0px;
+  font-size:0px;
+}
+.row {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+div.row div.col{
+  padding-left: 0px;
+  padding-right: 0px;;
+}
+
+.example-enter.example-enter-active {
+  opacity: 1;
+  font-size:1rem;
+  padding-left:1rem;
+  padding-right:1rem;
+  transition: all 400ms ease;
+}
+
+.example-leave {
+  opacity: 1;
+    font-size:1rem;
+  padding-left:1rem;
+  padding-right:1rem;
+}
+
+.example-leave.example-leave-active {
+  opacity: 0.01;
+    font-size:0;
+  transition: all 400ms ease;
+}
+

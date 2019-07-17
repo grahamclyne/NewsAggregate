@@ -8,6 +8,7 @@
     set up watching mechanism for webpack
     change key of list in index.js
     use docker
+    migrate to cloud
 
 
 
