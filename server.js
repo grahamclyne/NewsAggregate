@@ -6,13 +6,13 @@ var websocket = require('express-ws');
 const FeedParser = require('feedparser-promised');
 var app = express()
 var port = 3000
-
+require('dotenv').config()
 //CONNECT TO DB
 var con = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "password",
-  database: "NewsAggregate"
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_DATABASE
 });
 con.connect(function (err) {
   if (err) throw err;
@@ -148,7 +148,7 @@ app.ws('/', async (ws, req) => {
       var post = newPosts.pop();
       ws.send(JSON.stringify(post));
     }
-  }, 500)
+  }, 2000)
   ws.on('close', function () {
     clearInterval(x)
   })

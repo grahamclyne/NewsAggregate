@@ -47,7 +47,7 @@ class Posts extends React.Component {
 
     return (
       <Container style={{ 'listStyleType': 'none' }}>
-            <h2>A rolling version of a news feed</h2>
+            <h2 className="text-center">A rolling version of a news feed</h2>
 
         <CSSTransitionGroup
           transitionName="example"
