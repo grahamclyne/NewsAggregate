@@ -88,4 +88,4 @@ con.query(sql, function (err, result) {
 
 
 
-module.exports = {scrapePosts}
+module.exports = {scrapePosts, getMostRecentPosts}

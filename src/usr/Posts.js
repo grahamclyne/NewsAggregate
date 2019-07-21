@@ -46,15 +46,17 @@ class Posts extends React.Component {
       </Row>));
 
     return (
-      <Container style={{ 'listStyleType': 'none' }}>
-            <h2 className="text-center">A rolling version of a news feed</h2>
 
-        <CSSTransitionGroup
+      <Container>
+            <h2 className="text-center">A rolling version of a news feed</h2>
+      <Container>        
+      <CSSTransitionGroup
           transitionName="example"
-          transitionEnterTimeout={500}
-          transitionLeaveTimeout={300}>
+          transitionEnterTimeout={400}
+          transitionLeaveTimeout={400}>
           {posts}
         </CSSTransitionGroup>
+        </Container>
       </Container>
     );
   }

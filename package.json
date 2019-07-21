@@ -26,6 +26,7 @@
         "webpack-cli": "^3.3.5"
     },
     "scripts": {
-        "build": "webpack"
+        "build": "webpack",
+        "start":"node src/srv/server.js"
     }
 }
