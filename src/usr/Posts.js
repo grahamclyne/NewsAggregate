@@ -23,7 +23,7 @@ class Posts extends React.Component {
         post.linkshort = post.link.split('www.')[1].split('.com')[0]
       }
       catch (err) { post.linkshort = post.link }
-      post.pubdate = new Date(post.pubdate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      post.pubdate = new Date(post.pubdate).toLocaleTimeString([], { month: "short", day: "2-digit", hour: '2-digit', minute: '2-digit', second: '2-digit' })
       temp.unshift(post);
       if (temp.length > 5) {
         temp.pop();
@@ -40,22 +40,25 @@ class Posts extends React.Component {
           </Row>
           <Row>
             <Col><a href={post.link}>Source: {post.linkshort}</a></Col>
-            <Col><p className='text-right'>Time: {post.pubdate}</p></Col>
+            <Col><p className='text-right'>{post.pubdate}</p></Col>
           </Row>
         </Container>
       </Row>));
 
     return (
-
       <Container>
-            <h2 className="text-center">A rolling version of a news feed</h2>
-      <Container>        
-      <CSSTransitionGroup
-          transitionName="example"
-          transitionEnterTimeout={400}
-          transitionLeaveTimeout={400}>
-          {posts}
-        </CSSTransitionGroup>
+        <h2 className="text-center">A rolling version of a news feed</h2>
+        {/* <div class="form-group">
+          <label for="keys">Keyword:</label>
+          <input type="text" class="form-control" id="keys"></input>
+        </div> */}
+        <Container>
+          <CSSTransitionGroup
+            transitionName="example"
+            transitionEnterTimeout={400}
+            transitionLeaveTimeout={400}>
+            {posts}
+          </CSSTransitionGroup>
         </Container>
       </Container>
     );

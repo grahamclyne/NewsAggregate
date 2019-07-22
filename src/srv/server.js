@@ -15,10 +15,16 @@ function getPosts() {
       var posts = []
       var sites = [
         'https://montrealgazette.com/feed/',
-        'http://www.reddit.com/r/nba.rss',
         'https://www.theguardian.com/us/rss',
         'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
-        // 'https://www.aljazeera.com/xml/rss/all.xml',
+        'https://www.aljazeera.com/xml/rss/all.xml',
+        "http://rss.cnn.com/rss/cnn_topstories.rss",
+        "http://feeds.foxnews.com/foxnews/latest",
+        "http://www.latimes.com/rss2.0.xml",
+        "http://www.dailymail.co.uk/news/articles.rss",
+        "http://www.independent.co.uk/news/world/rss"
+
+
       ]
       for (let i = 0; i < sites.length; i++) {
         try {
@@ -45,10 +51,9 @@ app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 })
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../usr/index.html'))
-})
 
+
+//WEBSOCKET CONNECTION
 app.ws('/', async (ws, req) => {
   var newPosts = await getPosts();
   var interval = async function () {
@@ -60,7 +65,6 @@ app.ws('/', async (ws, req) => {
       };
     }
     else if (newPosts.length > 0) {
-
       console.log("Remaining posts to send: " + newPosts.length);
       var post = newPosts.pop();
       ws.send(JSON.stringify(post));
@@ -69,8 +73,14 @@ app.ws('/', async (ws, req) => {
   }
   interval()
   ws.on('close', function () {
-    clearInterval(x)
+    clearInterval(interval)
   })
+})
+
+
+//SENDING STATIC FILES
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../usr/index.html'))
 })
 app.get('/:file', (req, res) => {
   var options = {
@@ -81,6 +91,7 @@ app.get('/:file', (req, res) => {
       'x-sent': true
     }
   };
+  console.log(req.params.file)
   var fileName = req.params.file;
   res.sendFile(fileName, options, function (err) {
     if (err) {
@@ -91,4 +102,3 @@ app.get('/:file', (req, res) => {
   });
 })
 app.listen(port, () => console.log(`Listening on 127.0.0.1:${port}`))
-
