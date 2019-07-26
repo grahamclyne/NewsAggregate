@@ -1,20 +1,20 @@
+    A small app to automatically post headlines from various news sources
     
+    See grahamclyne.com for the running version
+
     to run: 
     #npm install
     #npm run build
-    #node src/srv/server.js
+    #npn run start
 
-    check localhost:3000
+    Development location-> localhost:3000
 
     TODO
-
     limit scraping to only 10 items per site at the feedparser
     set up watching mechanism for webpack
     change key of list in index.js
     use docker
-    migrate to cloud
-    check node production vs dev
-
+    look into express sessions
 
 
     NOTES

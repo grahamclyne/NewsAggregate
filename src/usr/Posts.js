@@ -1,18 +1,59 @@
 import React, { Component } from "react";
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col, Form , Button} from 'react-bootstrap';
 import ReactDOM from "react-dom";
 import('bootstrap/dist/css/bootstrap.min.css');
 import { CSSTransitionGroup } from 'react-transition-group'; // ES6
 import('./Posts.css');
 
+
+class KeywordList extends React.Component {
+
+  handleDelete(id) {
+    this.props.handleDelete(id);
+  }
+
+  render() {
+    return (
+      <ul className='list-inline' style={{'listStyle':'none'}}>
+        {this.props.items.map(item => (
+          <li className='list-inline-item' key={item}>{item}<Button variant='link' onClick={this.handleDelete.bind(this, item)}>&times;</Button></li>
+        ))}
+      </ul>
+    );
+  }
+}
 class Posts extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       posts: [],
       endpoint: "ws://localhost:3000/",
+      value: '',
+      keys: []
     };
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.delete = this.delete.bind(this);
   }
+  delete(id) {
+    this.setState(prevState => ({
+      keys: prevState.keys.filter(el => el != id)
+    }));
+  }
+  handleChange(event) {
+    this.setState({ value: event.target.value });
+    console.log(this.state.value)
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    var temp = this.state.keys;
+    temp.push(this.state.value);
+    console.log('submitted: ' + this.state.value)
+    this.setState({ keys: temp, value : '' })
+    console.log(this.state.keys)
+  }
+
   componentDidMount() {
     const ws = new WebSocket(this.state.endpoint)
     //push newly received message onto posts array
@@ -33,7 +74,7 @@ class Posts extends React.Component {
   }
   render() {
     const posts = this.state.posts.map(post => (
-      <Row key={post.title} >
+      <Row key={post.title}>
         <Container className='post'>
           <Row >
             {post.title}
@@ -43,15 +84,19 @@ class Posts extends React.Component {
             <Col><p className='text-right'>{post.pubdate}</p></Col>
           </Row>
         </Container>
-      </Row>));
-
+      </Row>
+    ));
     return (
       <Container>
         <h2 className="text-center">A rolling version of a news feed</h2>
-        {/* <div class="form-group">
-          <label for="keys">Keyword:</label>
-          <input type="text" class="form-control" id="keys"></input>
-        </div> */}
+        <Form onSubmit={this.handleSubmit}>
+          <Form.Control placeholder="Enter search keywords" id='keyform'
+            value={this.state.value} onChange={this.handleChange} >
+          </Form.Control>
+        </Form>
+        <ul className='list-inline'>
+          <KeywordList items={this.state.keys} handleDelete={this.delete.bind(this)}/>
+        </ul>
         <Container>
           <CSSTransitionGroup
             transitionName="example"

@@ -27,6 +27,6 @@
     },
     "scripts": {
         "build": "webpack",
-        "start":"node src/srv/server.js"
+        "start": "node src/srv/server.js"
     }
 }
