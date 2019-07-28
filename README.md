@@ -19,3 +19,4 @@
 
     NOTES
     for some reason need to use react-transition-group 1.x, anything higher there is a conflict
+    to use certbot, use manual mode!!!!!

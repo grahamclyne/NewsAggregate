@@ -1,9 +1,10 @@
 import React, { Component } from "react";
-import { Container, Row, Col, Form , Button} from 'react-bootstrap';
+import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import ReactDOM from "react-dom";
 import('bootstrap/dist/css/bootstrap.min.css');
 import { CSSTransitionGroup } from 'react-transition-group'; // ES6
 import('./Posts.css');
+import('../../.well-known/acme-challenge/pop.js');
 
 
 class KeywordList extends React.Component {
@@ -14,7 +15,7 @@ class KeywordList extends React.Component {
 
   render() {
     return (
-      <ul className='list-inline' style={{'listStyle':'none'}}>
+      <ul className='list-inline' style={{ 'listStyle': 'none' }}>
         {this.props.items.map(item => (
           <li className='list-inline-item' key={item}>{item}<Button variant='link' onClick={this.handleDelete.bind(this, item)}>&times;</Button></li>
         ))}
@@ -22,12 +23,15 @@ class KeywordList extends React.Component {
     );
   }
 }
+
+
+
 class Posts extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       posts: [],
-      endpoint: "ws://localhost:3000/",
+      endpoint: "wss://grahamclyne.com",
       value: '',
       keys: []
     };
@@ -50,7 +54,7 @@ class Posts extends React.Component {
     var temp = this.state.keys;
     temp.push(this.state.value);
     console.log('submitted: ' + this.state.value)
-    this.setState({ keys: temp, value : '' })
+    this.setState({ keys: temp, value: '' })
     console.log(this.state.keys)
   }
 
@@ -75,6 +79,7 @@ class Posts extends React.Component {
   render() {
     const posts = this.state.posts.map(post => (
       <Row key={post.title}>
+
         <Container className='post'>
           <Row >
             {post.title}
@@ -95,7 +100,7 @@ class Posts extends React.Component {
           </Form.Control>
         </Form>
         <ul className='list-inline'>
-          <KeywordList items={this.state.keys} handleDelete={this.delete.bind(this)}/>
+          <KeywordList items={this.state.keys} handleDelete={this.delete.bind(this)} />
         </ul>
         <Container>
           <CSSTransitionGroup

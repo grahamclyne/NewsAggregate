@@ -1,12 +1,19 @@
 var express = require('express')
 var websocket = require('express-ws');
+var fs = require('fs');
+var https = require('https')
 var db = require('./db.js')
 var app = express()
-websocket(app)
-app.use(express.static('src/usr'));
+
+var privateKey = fs.readFileSync('/etc/letsencrypt/live/grahamclyne.com/privkey.pem')
+var certificate = fs.readFileSync('/etc/letsencrypt/live/grahamclyne.com/fullchain.pem')
+var credentials = {key: privateKey, cert: certificate};
+var httpsServer = https.createServer(credentials,app)
+var websocket = require('express-ws')(app, httpsServer)
+
 
 if(process.env.NODE_ENV == 'development'){
-  console.log(process.env.DB_USER)
+
 }
 if(process.env.NODE_ENV == 'production'){
 
@@ -43,18 +50,27 @@ function getPosts() {
   )
 }
 
-//SERVER
-var myLogger = function (req, res, next) {
+
+//logger function
+app.use(function (req, res, next) {
   console.log("Request for " + req.url + " received.")
   next()
-}
-app.use(myLogger);
+})
+//setting proper headers
 app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 })
 
+//for manual ssl ceritification with certbot
+const letsEncryptReponse = process.env.CERTBOT_RESPONSE;
+app.get('/.well-known/acme-challenge/:content', function(req, res) {
+  res.send(letsEncryptReponse);
+});
+
+//serves static files
+app.use(express.static('src/usr'));
 
 //WEBSOCKET CONNECTION
 app.ws('/', async (ws, req) => {
@@ -88,4 +104,4 @@ app.ws('/', async (ws, req) => {
 })
 
 
-app.listen(process.env.PORT, () => console.log(`Listening on 127.0.0.1:${process.env.PORT}`))
+httpsServer.listen(3000)
