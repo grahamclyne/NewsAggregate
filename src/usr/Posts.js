@@ -4,7 +4,6 @@ import ReactDOM from "react-dom";
 import('bootstrap/dist/css/bootstrap.min.css');
 import { CSSTransitionGroup } from 'react-transition-group'; // ES6
 import('./Posts.css');
-import('../../.well-known/acme-challenge/pop.js');
 
 
 class KeywordList extends React.Component {
@@ -31,7 +30,7 @@ class Posts extends React.Component {
     super(props);
     this.state = {
       posts: [],
-      endpoint: "wss://grahamclyne.com",
+      endpoint: "ws://localhost:3000",
       value: '',
       keys: []
     };

@@ -1,4 +1,5 @@
-    A small app to automatically post headlines from various news sources
+    A small app to automatically post headlines from various news sources. 
+    server starts by using feedparser library to scrape rss feeds from websites (a hard-coded list) and then the server then sends requests one by one via websockets to the client. if there are no new posts to scrape, the ten most recent posts are continually fed to the client
     
     See grahamclyne.com for the running version
 
@@ -15,6 +16,7 @@
     change key of list in index.js
     use docker
     look into express sessions
+    travis CI
 
 
     NOTES

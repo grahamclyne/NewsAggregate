@@ -1,23 +1,24 @@
 var express = require('express')
-var websocket = require('express-ws');
 var fs = require('fs');
 var https = require('https')
+var http = require('http')
 var db = require('./db.js')
 var app = express()
-
-var privateKey = fs.readFileSync('/etc/letsencrypt/live/grahamclyne.com/privkey.pem')
-var certificate = fs.readFileSync('/etc/letsencrypt/live/grahamclyne.com/fullchain.pem')
-var credentials = {key: privateKey, cert: certificate};
-var httpsServer = https.createServer(credentials,app)
-var websocket = require('express-ws')(app, httpsServer)
+var server = '';
+var websocket = '';
 
 
-if(process.env.NODE_ENV == 'development'){
-
+if (process.env.NODE_ENV == 'development') {
+  server = http.createServer(app)
 }
-if(process.env.NODE_ENV == 'production'){
-
+if (process.env.NODE_ENV == 'production') {
+  var privateKey = fs.readFileSync('/etc/letsencrypt/live/grahamclyne.com/privkey.pem')
+  var certificate = fs.readFileSync('/etc/letsencrypt/live/grahamclyne.com/fullchain.pem')
+  var credentials = { key: privateKey, cert: certificate };
+  server = https.createServer(credentials, app)
 }
+
+websocket = require('express-ws')(app, server)
 
 function getPosts() {
   return new Promise(async (res, rej) => {
@@ -33,8 +34,6 @@ function getPosts() {
       "http://www.latimes.com/rss2.0.xml",
       "http://www.dailymail.co.uk/news/articles.rss",
       "http://www.independent.co.uk/news/world/rss"
-
-
     ]
     for (let i = 0; i < sites.length; i++) {
       try {
@@ -65,7 +64,7 @@ app.use(function (req, res, next) {
 
 //for manual ssl ceritification with certbot
 const letsEncryptReponse = process.env.CERTBOT_RESPONSE;
-app.get('/.well-known/acme-challenge/:content', function(req, res) {
+app.get('/.well-known/acme-challenge/:content', function (req, res) {
   res.send(letsEncryptReponse);
 });
 
@@ -104,4 +103,4 @@ app.ws('/', async (ws, req) => {
 })
 
 
-httpsServer.listen(3000)
+server.listen(3000)
